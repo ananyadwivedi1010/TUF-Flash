@@ -1,0 +1,5 @@
+{
+  "name": "TUF AI Companion",
+  "description": "A comprehensive DSA learning platform inspired by Take U Forward, featuring a progress tracker, roadmap visualizer, and an integrated Gemini-powered AI Tutor for code explanations and logic hints.",
+  "requestFramePermissions": []
+}
