@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+📝Problem Statement
 
-# Run and deploy your AI Studio app
+While revising Data Structures & Algorithms, students often face these challenges:
 
-This contains everything you need to run your app locally.
+Scattered Notes: Problem solutions are written across notebooks, Google Docs, PDFs, or screenshots. Searching for a specific solution is time-consuming.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1DOtQBybOi2oyOhe-i8VLA7PUlp48so0t
+Lack of Organization: Difficult to track which topics or problems have been completed and which need revision.
 
-## Run Locally
+No Personal Repository: Students cannot easily maintain a personal collection of their solved problems with explanations, images, or PDFs.
 
-**Prerequisites:**  Node.js
+Inefficient Revision: Revisiting old solutions often requires scrolling through multiple platforms or documents, which slows down learning.
+
+Goal: Create a simple, organized, personalized digital notebook where students can store, view, and track all the DSA problems they’ve studied.
+
+💡 Solution
+
+TUF Flash addresses these challenges by providing:
+
+Personalized Flashcards: Students can create topics (categories) like Arrays, Graphs, Strings, etc., and add problems they’ve solved.
+
+Track Progress: Each problem can have a question, solution, and notes. Quickly see which problems have been studied.
+
+Attach Supporting Materials: Add images or PDF files for explanations, diagrams, or detailed solutions.
+
+Easy Retrieval: Instantly search and revisit any problem in a clean, organized UI.
+
+Offline & Persistent: All flashcards are saved locally in the browser, so students don’t lose their progress.
+
+Check out the demo of **TUF Flash**:
+
+[![Watch the Demo](https://img.youtube.com/vi/cOVIomnrkn6/maxresdefault.jpg)](https://go.screenpal.com/watch/cOVIomnrkn6)
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+
