@@ -13,6 +13,8 @@ export interface Flashcard {
   categoryId: string;
   question: string;
   answer: string;
+  answerImage?: string; // Base64 encoded image string
+  answerPdf?: string;   // Base64 encoded PDF string
   isFlipped?: boolean;
 }
 
