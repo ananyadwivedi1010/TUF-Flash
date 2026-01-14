@@ -11,11 +11,95 @@
         body { 
           font-family: 'Inter', sans-serif; 
           background-color: #000;
+          color: white;
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden;
         }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #A91D3A; }
+        
+        /* 3D Flip Mechanics - Perspective is defined on the card container itself */
+        .flip-card {
+          perspective: 1500px;
+          height: 520px;
+          width: 100%;
+        }
+        .flip-card-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          transform-style: preserve-3d;
+        }
+        .flip-card.is-flipped .flip-card-inner {
+          transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          display: flex;
+          flex-direction: column;
+          border-radius: 3rem;
+        }
+        .flip-card-back {
+          transform: rotateY(180deg);
+        }
+
+        /* Blaze Text Animation for Intro */
+        @keyframes fire-flow {
+          0% { background-position: 150% 0; }
+          100% { background-position: -50% 0; }
+        }
+        @keyframes subtle-glow {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(169, 29, 58, 0.3)); }
+          50% { filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.4)); }
+        }
+        .blaze-text {
+          background: linear-gradient(
+            to right, 
+            #A91D3A 0%, 
+            #A91D3A 35%, 
+            #FFD700 45%, 
+            #FFFACD 50%, 
+            #FFD700 55%, 
+            #A91D3A 65%, 
+            #A91D3A 100%
+          );
+          background-size: 300% 100%;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: fire-flow 3s ease-in-out infinite, subtle-glow 2s ease-in-out infinite;
+          display: inline-block;
+          font-style: italic;
+        }
+
+        @keyframes text-pop {
+          0% { transform: scale(0.9); opacity: 0; filter: blur(10px); }
+          100% { transform: scale(1); opacity: 1; filter: blur(0); }
+        }
+        .intro-container {
+          animation: text-pop 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Custom Scrollbar for Card Backs */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #A91D3A; }
+
+        /* Animation for background blobs */
+        @keyframes float-blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .bg-blob {
+          animation: float-blob 20s infinite alternate ease-in-out;
+        }
     </style>
 <script type="importmap">
 {
@@ -29,8 +113,12 @@
 </script>
 </head>
 <body class="bg-black text-white antialiased">
+    <!-- Static background blobs -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-20">
+        <div class="absolute top-[10%] left-[5%] w-96 h-96 bg-red-900/30 blur-[120px] rounded-full bg-blob"></div>
+        <div class="absolute bottom-[20%] right-[10%] w-[30rem] h-[30rem] bg-red-800/10 blur-[150px] rounded-full bg-blob" style="animation-delay: -5s"></div>
+    </div>
     <div id="root"></div>
-    <!-- This tag was missing - it loads your logic! -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>
