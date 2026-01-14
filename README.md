@@ -1,106 +1,94 @@
-📝Problem Statement
+# 📘 TUF Flash
 
-While revising Data Structures & Algorithms, students often face these challenges:
+## 📝 Problem Statement
 
-Scattered Notes: Problem solutions are written across notebooks, Google Docs, PDFs, or screenshots. Searching for a specific solution is time-consuming.
+While revising **Data Structures & Algorithms**, students commonly face the following challenges:
 
-Lack of Organization: Difficult to track which topics or problems have been completed and which need revision.
+1. **Scattered Notes**  
+   Solutions are spread across notebooks, Google Docs, PDFs, screenshots, and chats, making searching slow and frustrating.
 
-No Personal Repository: Students cannot easily maintain a personal collection of their solved problems with explanations, images, or PDFs.
+2. **Lack of Organization**  
+   It becomes difficult to track which topics or problems are completed and which still need revision.
 
-Inefficient Revision: Revisiting old solutions often requires scrolling through multiple platforms or documents, which slows down learning.
+3. **No Personal Repository**  
+   Students lack a single place to store their solved problems along with explanations, images, or PDFs.
 
-Goal: Create a simple, organized, personalized digital notebook where students can store, view, and track all the DSA problems they’ve studied.
+4. **Inefficient Revision**  
+   Revisiting old solutions often requires scrolling through multiple platforms, slowing down learning and revision.
 
-💡 Solution
+### 🎯 Goal
+Create a **simple, organized, and personalized digital notebook** where students can store, view, and track all the DSA problems they’ve studied.
 
-TUF Flash addresses these challenges by providing:
+---
 
-Personalized Flashcards: Students can create topics (categories) like Arrays, Graphs, Strings, etc., and add problems they’ve solved.
+## 💡 Solution
 
-Track Progress: Each problem can have a question, solution, and notes. Quickly see which problems have been studied.
+**TUF Flash** solves these problems by providing:
 
-Attach Supporting Materials: Add images or PDF files for explanations, diagrams, or detailed solutions.
+1. **Personalized Flashcards**  
+   Create topic-wise categories such as Arrays, Strings, Graphs, Trees, etc., and store solved problems under each topic.
 
-Easy Retrieval: Instantly search and revisit any problem in a clean, organized UI.
+2. **Progress Tracking**  
+   Each problem contains a question, solution, and personal notes, helping students track what they’ve already studied.
 
-Offline & Persistent: All flashcards are saved locally in the browser, so students don’t lose their progress.
+3. **Attach Supporting Materials**  
+   Upload images or PDF files for diagrams, explanations, or detailed solutions.
 
-## Database Setup
+4. **Easy Retrieval**  
+   Instantly search and revisit any problem through a clean and organized user interface.
 
-This project uses Supabase for user authentication and data persistence. To set up the database:
+5. **Offline & Persistent Storage**  
+   Flashcards remain saved, ensuring students don’t lose progress even after revisiting the app.
 
-1. Create a Supabase project at [supabase.com](https://supabase.com)
+6. **AI Chatbot Support**  
+   Ask doubts instantly — about code, time complexity, or concepts — and get intelligent responses in real time.
 
-2. Go to Settings > API and copy your Project URL and anon public key
+---
 
-3. Update the `.env` file with your Supabase credentials:
-   ```
-   VITE_SUPABASE_URL=your_project_url
-   VITE_SUPABASE_ANON_KEY=your_anon_key
-   ```
+## 🛠 Tech Stack
 
-4. In your Supabase dashboard, go to the SQL Editor and run the following to create the tables:
+### 🎯 Frontend Framework
+- **React 19.2.3** — Latest React with modern features and performance improvements  
+- **TypeScript 5.8.2** — Type-safe JavaScript for better reliability and scalability  
+- **Vite 6.2.0** — Fast build tool and development server  
 
-   ```sql
-   -- Create categories table
-   CREATE TABLE categories (
-     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-     name TEXT NOT NULL,
-     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
+---
 
-   -- Create flashcards table
-   CREATE TABLE flashcards (
-     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-     category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
-     question TEXT NOT NULL,
-     answer TEXT,
-     answer_image TEXT,
-     answer_pdf TEXT,
-     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
+### 🎨 Styling & UI
+- **Tailwind CSS (CDN)** — Utility-first CSS framework for rapid UI development  
+- **Inter Font (Google Fonts)** — Clean and modern typography  
+- **Custom CSS** — Inline styles for animations and 3D visual effects  
 
-   -- Enable Row Level Security
-   ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-   ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
+---
 
-   -- Create policies for categories
-   CREATE POLICY "Users can view their own categories" ON categories
-     FOR SELECT USING (auth.uid() = user_id);
+### 🔧 Build & Development Tools
+- **Vite** — Lightning-fast bundler and dev environment  
+- **@vitejs/plugin-react** — Optimized React integration for Vite  
+- **TypeScript Compiler** — Static type checking and reliable builds  
 
-   CREATE POLICY "Users can insert their own categories" ON categories
-     FOR INSERT WITH CHECK (auth.uid() = user_id);
+---
 
-   CREATE POLICY "Users can update their own categories" ON categories
-     FOR UPDATE USING (auth.uid() = user_id);
+### ☁️ Backend & Database
+- **Supabase** — Backend-as-a-Service platform  
+- **PostgreSQL** — Scalable relational database  
+- **Authentication** — Secure email/password login  
+- **Row Level Security (RLS)** — Fine-grained data access control  
+- **Real-time Subscriptions** — Live data updates  
 
-   CREATE POLICY "Users can delete their own categories" ON categories
-     FOR DELETE USING (auth.uid() = user_id);
+---
 
-   -- Create policies for flashcards
-   CREATE POLICY "Users can view their own flashcards" ON flashcards
-     FOR SELECT USING (auth.uid() = user_id);
+### 🤖 AI Integration
+- **Google Generative AI (`@google/genai`)** — Powers the AI chatbot for instant doubt resolution  
 
-   CREATE POLICY "Users can insert their own flashcards" ON flashcards
-     FOR INSERT WITH CHECK (auth.uid() = user_id);
+---
 
-   CREATE POLICY "Users can update their own flashcards" ON flashcards
-     FOR UPDATE USING (auth.uid() = user_id);
-
-   CREATE POLICY "Users can delete their own flashcards" ON flashcards
-     FOR DELETE USING (auth.uid() = user_id);
-   ```
-
-5. In Supabase Auth settings, enable email authentication.
-
-Now your app is connected to Supabase! Users can sign up, log in, and their data will be stored in the database.
-
-Check out the demo of **TUF Flash**:
+## 🎥 Demo Video
 
 [![Watch the Demo](https://img.youtube.com/vi/cOVIomnrkn6/maxresdefault.jpg)](https://go.screenpal.com/watch/cOVIomnrkn6)
 
+---
 
+## 🚀 Live Demo
+🔗 **https://tuf-flash.vercel.app/**
 
+---
