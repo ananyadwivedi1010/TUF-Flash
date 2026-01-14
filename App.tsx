@@ -4,41 +4,74 @@ import { Flashcard, Category, User } from './types';
 import Auth from './components/Auth';
 import ChatBot from './components/ChatBot';
 import Intro from './components/Intro';
+import { supabase } from './utils/supabase';
 
 const App: React.FC = () => {
   const [showIntro, setShowIntro] = useState(true);
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('fl_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
 
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('fl_categories');
-    return saved ? JSON.parse(saved) : [
-      { id: '1', name: 'Arrays' },
-      { id: '2', name: 'Strings' },
-      { id: '3', name: 'Graphs' },
-      { id: '4', name: 'Trees' },
-    ];
-  });
-
-  const [flashcards, setFlashcards] = useState<Flashcard[]>(() => {
-    const saved = localStorage.getItem('fl_cards');
-    return saved ? JSON.parse(saved) : [
-      { id: 'f1', categoryId: '1', question: 'Largest Element in an Array', answer: 'Find the maximum value by iterating once or using a built-in max function.' },
-      { id: 'f3', categoryId: '2', question: 'Palindrome Check', answer: 'Compare the string with its reverse or use two pointers meeting at center.' },
-    ];
-  });
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
 
   useEffect(() => {
-    if (user) localStorage.setItem('fl_user', JSON.stringify(user));
-    else localStorage.removeItem('fl_user');
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser({
+          name: session.user.user_metadata?.name || session.user.email!.split('@')[0],
+          email: session.user.email!,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${session.user.user_metadata?.name || session.user.email}`
+        });
+      }
+    };
+    getInitialSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser({
+          name: session.user.user_metadata?.name || session.user.email!.split('@')[0],
+          email: session.user.email!,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${session.user.user_metadata?.name || session.user.email}`
+        });
+      } else {
+        setUser(null);
+        setCategories([]);
+        setFlashcards([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadCategories();
+      loadFlashcards();
+    }
   }, [user]);
 
-  useEffect(() => {
-    localStorage.setItem('fl_categories', JSON.stringify(categories));
-    localStorage.setItem('fl_cards', JSON.stringify(flashcards));
-  }, [categories, flashcards]);
+  const loadCategories = async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
+    if (error) console.error(error);
+    else setCategories(data || []);
+  };
+
+  const loadFlashcards = async () => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('*')
+      .order('question');
+    if (error) console.error(error);
+    else setFlashcards((data || []).map(card => ({
+      ...card,
+      categoryId: card.category_id,
+      answerImage: card.answer_image,
+      answerPdf: card.answer_pdf
+    })));
+  };
 
   const [activeCategory, setActiveCategory] = useState<string>('1');
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -74,17 +107,36 @@ const App: React.FC = () => {
     document.getElementById('manage-content')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleDeleteCard = (id: string) => {
+  const handleDeleteCard = async (id: string) => {
     if (window.confirm("Delete this flashcard?")) {
-      setFlashcards(prev => prev.filter(f => f.id !== id));
+      const { error } = await supabase
+        .from('flashcards')
+        .delete()
+        .eq('id', id);
+      if (error) console.error(error);
+      else setFlashcards(prev => prev.filter(f => f.id !== id));
     }
   };
 
-  const handleDeleteCategory = (id: string) => {
+  const handleDeleteCategory = async (id: string) => {
     if (window.confirm("Deleting this module will also delete all its flashcards. Continue?")) {
+      // Delete flashcards first
+      const { error: flashError } = await supabase
+        .from('flashcards')
+        .delete()
+        .eq('category_id', id);
+      if (flashError) console.error(flashError);
+
+      // Delete category
+      const { error: catError } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+      if (catError) console.error(catError);
+
       setCategories(prev => prev.filter(c => c.id !== id));
       setFlashcards(prev => prev.filter(f => f.categoryId !== id));
-      if (activeCategory === id) setActiveCategory(categories[0]?.id || '');
+      if (activeCategory === id) setActiveCategory(categories.find(c => c.id !== id)?.id || '');
     }
   };
 
@@ -93,10 +145,17 @@ const App: React.FC = () => {
     setCategoryEditName(cat.name);
   };
 
-  const saveCategoryEdit = () => {
+  const saveCategoryEdit = async () => {
     if (!categoryEditName.trim()) return;
-    setCategories(prev => prev.map(c => c.id === editingCategoryId ? { ...c, name: categoryEditName } : c));
-    setEditingCategoryId(null);
+    const { error } = await supabase
+      .from('categories')
+      .update({ name: categoryEditName })
+      .eq('id', editingCategoryId);
+    if (error) console.error(error);
+    else {
+      setCategories(prev => prev.map(c => c.id === editingCategoryId ? { ...c, name: categoryEditName } : c));
+      setEditingCategoryId(null);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +214,9 @@ const App: React.FC = () => {
               <span className="text-xs font-black text-white">{user.name}</span>
             </div>
             <button 
-              onClick={() => setUser(null)}
+              onClick={async () => {
+                await supabase.auth.signOut();
+              }}
               className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-900/20 hover:text-red-500 transition-all border border-white/5"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -278,12 +339,21 @@ const App: React.FC = () => {
                     className="flex-1 bg-black border border-white/10 rounded-3xl px-8 py-5 focus:border-red-500/50 outline-none transition-all placeholder-gray-800 font-bold"
                   />
                   <button 
-                    onClick={() => {
+                    onClick={async () => {
                       if (!newCategoryName.trim()) return;
-                      const id = Date.now().toString();
-                      setCategories([...categories, { id, name: newCategoryName }]);
-                      setNewCategoryName('');
-                      setActiveCategory(id);
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) return;
+                      const { data, error } = await supabase
+                        .from('categories')
+                        .insert([{ name: newCategoryName, user_id: user.id }])
+                        .select()
+                        .single();
+                      if (error) console.error(error);
+                      else {
+                        setCategories([...categories, data]);
+                        setNewCategoryName('');
+                        setActiveCategory(data.id);
+                      }
                     }}
                     className="px-10 py-5 bg-[#A91D3A] rounded-3xl font-black shadow-lg shadow-red-900/20 active:scale-95 transition-transform uppercase text-xs tracking-widest"
                   >
@@ -331,19 +401,49 @@ const App: React.FC = () => {
                   </div>
                   <div className="flex gap-4">
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                          if (!selectedCategoryId || !newQuestion.trim()) return;
-                         const cardData: Flashcard = {
-                           id: editingCardId || Date.now().toString(),
-                           categoryId: selectedCategoryId,
+                         const { data: { user } } = await supabase.auth.getUser();
+                         if (!user) return;
+                         const cardData = {
+                           category_id: selectedCategoryId,
                            question: newQuestion,
                            answer: newAnswer,
-                           answerImage: newAnswerImage,
-                           answerPdf: newAnswerPdf
+                           answer_image: newAnswerImage,
+                           answer_pdf: newAnswerPdf,
+                           user_id: user.id
                          };
-                         if (editingCardId) setFlashcards(flashcards.map(f => f.id === editingCardId ? cardData : f));
-                         else setFlashcards([...flashcards, cardData]);
-                         setEditingCardId(null);
+                         if (editingCardId) {
+                           const { error } = await supabase
+                             .from('flashcards')
+                             .update(cardData)
+                             .eq('id', editingCardId);
+                           if (error) console.error(error);
+                           else {
+                             setFlashcards(flashcards.map(f => f.id === editingCardId ? { 
+                               ...f, 
+                               question: cardData.question,
+                               answer: cardData.answer,
+                               answerImage: cardData.answer_image,
+                               answerPdf: cardData.answer_pdf,
+                               categoryId: cardData.category_id
+                             } : f));
+                             setEditingCardId(null);
+                           }
+                         } else {
+                           const { data, error } = await supabase
+                             .from('flashcards')
+                             .insert([cardData])
+                             .select()
+                             .single();
+                           if (error) console.error(error);
+                           else setFlashcards([...flashcards, { 
+                             ...data, 
+                             categoryId: data.category_id,
+                             answerImage: data.answer_image,
+                             answerPdf: data.answer_pdf
+                           }]);
+                         }
                          setNewQuestion(''); setNewAnswer(''); setNewAnswerImage(undefined); setNewAnswerPdf(undefined);
                       }}
                       className="flex-1 py-8 bg-[#A91D3A] rounded-[2rem] font-black text-2xl shadow-2xl shadow-red-900/40 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase"

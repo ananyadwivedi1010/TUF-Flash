@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { User } from '../types';
+import { supabase } from '../utils/supabase';
 
 interface AuthProps {
   onLogin: (user: User) => void;
@@ -10,15 +11,54 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    onLogin({
-      name: name || email.split('@')[0],
-      email: email,
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${name || email}`
-    });
+    if (!email || !password) return;
+    setLoading(true);
+    setError('');
+
+    try {
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        if (data.user) {
+          onLogin({
+            name: data.user.user_metadata?.name || email.split('@')[0],
+            email: data.user.email!,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${data.user.user_metadata?.name || email}`
+          });
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: name || email.split('@')[0],
+            }
+          }
+        });
+        if (error) throw error;
+        if (data.user) {
+          onLogin({
+            name: name || email.split('@')[0],
+            email: data.user.email!,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${name || email}`
+          });
+        }
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,8 +92,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               className="w-full bg-black border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-red-500 outline-none transition placeholder-gray-700 font-bold"
               required
             />
-            <button type="submit" className="w-full py-5 bg-[#A91D3A] rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest">
-              {isLogin ? 'Log In' : 'Sign Up'}
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-black border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-red-500 outline-none transition placeholder-gray-700 font-bold"
+              required
+            />
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <button type="submit" disabled={loading} className="w-full py-5 bg-[#A91D3A] rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest disabled:opacity-50">
+              {loading ? 'Loading...' : (isLogin ? 'Log In' : 'Sign Up')}
             </button>
           </form>
 

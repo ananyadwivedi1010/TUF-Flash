@@ -26,6 +26,78 @@ Easy Retrieval: Instantly search and revisit any problem in a clean, organized U
 
 Offline & Persistent: All flashcards are saved locally in the browser, so students don’t lose their progress.
 
+## Database Setup
+
+This project uses Supabase for user authentication and data persistence. To set up the database:
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+
+2. Go to Settings > API and copy your Project URL and anon public key
+
+3. Update the `.env` file with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_project_url
+   VITE_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+4. In your Supabase dashboard, go to the SQL Editor and run the following to create the tables:
+
+   ```sql
+   -- Create categories table
+   CREATE TABLE categories (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     name TEXT NOT NULL,
+     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- Create flashcards table
+   CREATE TABLE flashcards (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
+     question TEXT NOT NULL,
+     answer TEXT,
+     answer_image TEXT,
+     answer_pdf TEXT,
+     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- Enable Row Level Security
+   ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+   ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
+
+   -- Create policies for categories
+   CREATE POLICY "Users can view their own categories" ON categories
+     FOR SELECT USING (auth.uid() = user_id);
+
+   CREATE POLICY "Users can insert their own categories" ON categories
+     FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+   CREATE POLICY "Users can update their own categories" ON categories
+     FOR UPDATE USING (auth.uid() = user_id);
+
+   CREATE POLICY "Users can delete their own categories" ON categories
+     FOR DELETE USING (auth.uid() = user_id);
+
+   -- Create policies for flashcards
+   CREATE POLICY "Users can view their own flashcards" ON flashcards
+     FOR SELECT USING (auth.uid() = user_id);
+
+   CREATE POLICY "Users can insert their own flashcards" ON flashcards
+     FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+   CREATE POLICY "Users can update their own flashcards" ON flashcards
+     FOR UPDATE USING (auth.uid() = user_id);
+
+   CREATE POLICY "Users can delete their own flashcards" ON flashcards
+     FOR DELETE USING (auth.uid() = user_id);
+   ```
+
+5. In Supabase Auth settings, enable email authentication.
+
+Now your app is connected to Supabase! Users can sign up, log in, and their data will be stored in the database.
+
 Check out the demo of **TUF Flash**:
 
 [![Watch the Demo](https://img.youtube.com/vi/cOVIomnrkn6/maxresdefault.jpg)](https://go.screenpal.com/watch/cOVIomnrkn6)
