@@ -45,8 +45,8 @@ Create a **simple, organized, and personalized digital notebook** where students
 
 ---
 
-## 🎥 Demo Video
-<div class="sp-embed-player" data-id="cOVIomnrkn6" data-aspect-ratio="2.233645" data-padding-top="44.769874%" style="position:relative;width:100%;padding-top:44.769874%;height:0;"><script src="https://go.screenpal.com/consumption/player_appearance/cOVIomnrkn6/2.233645"></script><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"  scrolling="no" src="https://go.screenpal.com/player/cOVIomnrkn6?ff=1&ahc=1&dcc=1&bg=transparent&share=1&download=1&embed=1&cl=1" allowfullscreen="true"></iframe></div>
+## 📽️ Demo Video
+[Click here to watch the demo](https://go.screenpal.com/watch/cOVIomnrkn6)
 ---
 
 ## 🛠 Tech Stack
