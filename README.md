@@ -45,6 +45,12 @@ Create a **simple, organized, and personalized digital notebook** where students
 
 ---
 
+## 🎥 Demo Video
+
+[![Watch the Demo](https://img.youtube.com/vi/cOVIomnrkn6/maxresdefault.jpg)](https://go.screenpal.com/watch/cOVIomnrkn6)
+
+---
+
 ## 🛠 Tech Stack
 
 ### 🎯 Frontend Framework
@@ -82,13 +88,5 @@ Create a **simple, organized, and personalized digital notebook** where students
 
 ---
 
-## 🎥 Demo Video
 
-[![Watch the Demo](https://img.youtube.com/vi/cOVIomnrkn6/maxresdefault.jpg)](https://go.screenpal.com/watch/cOVIomnrkn6)
 
----
-
-## 🚀 Live Demo
-🔗 **https://tuf-flash.vercel.app/**
-
----
